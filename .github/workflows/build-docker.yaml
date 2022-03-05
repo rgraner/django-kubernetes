@@ -16,6 +16,7 @@ jobs:
     needs: [test_django_job]
     env: 
       DJANGO_SECRET_KEY: test-key-not-good-maybe-make-one-better
+      CLUSTER_NAME: django-k8s
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -35,9 +36,9 @@ jobs:
     - name: Push image
       run: |
         docker push registry.digitalocean.com/rgraner-k8s/django-k8s-web --all-tags
-    # - name: k8s cluster kubeconfig file with/ short-lived creds
-    #   run: |
-    #     doctl kubernetes cluster kubeconfig save --expiry-seconds 600 ${{env.CLUSTER_NAME}}
+    - name: k8s cluster kubeconfig file with/ short-lived creds
+      run: |
+        doctl kubernetes cluster kubeconfig save --expiry-seconds 600 ${{env.CLUSTER_NAME}}
     # - name: Update deployment secrets
     #   run: |
     #     cat << EOF >> web/.env.prod
@@ -56,14 +57,14 @@ jobs:
     #     EOF
     #     kubectl delete secret django-k8s-web-prod-env
     #     kubectl create secret generic django-k8s-web-prod-env --from-env-file=web/.env.prod
-    # - name: Update deployment image
-    #   run: kubectl set image deployment/django-k8s-web-deployment django-k8s-web=registry.digitalocean.com/rgraner-k8s/django-k8s-web:${GITHUB_SHA::7}
-    # - name: wait for rollout to finish
-    #   run: |
-    #     kubectl rollout status deployment/django-k8s-web-deployment
-    # - name: Post-build Django Commands - Migrate / Collectstatic
-    #   run: |
-    #     export SINGLE_POD_NAME=$(kubectl get pod -l app=django-k8s-web-deployment -o jsonpath="{.items[0].metadata.name}")
-    #     kubectl exec -it $SINGLE_POD_NAME -- bash /app/migrate.sh
+    - name: Update deployment image
+      run: kubectl set image deployment/django-k8s-web-deployment django-k8s-web=registry.digitalocean.com/rgraner-k8s/django-k8s-web:${GITHUB_SHA::7}
+    - name: wait for rollout to finish
+      run: |
+        kubectl rollout status deployment/django-k8s-web-deployment
+    - name: Post-build Django Commands - Migrate / Collectstatic
+      run: |
+        export SINGLE_POD_NAME=$(kubectl get pod -l app=django-k8s-web-deployment -o jsonpath="{.items[0].metadata.name}")
+        kubectl exec -it $SINGLE_POD_NAME -- bash /app/migrate.sh
     #     kubectl exec -it $SINGLE_POD_NAME -- bash /app/collectstatic.sh
    
