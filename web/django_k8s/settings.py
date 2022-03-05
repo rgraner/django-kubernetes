@@ -34,6 +34,8 @@ if ENV_ALLOWED_HOST:
 # Application definition
 
 INSTALLED_APPS = [
+    'posts', 
+    
     'storages',
 
     'django.contrib.admin',
