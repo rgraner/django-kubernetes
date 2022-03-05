@@ -30,7 +30,7 @@ jobs:
       run: |
         docker build -f Dockerfile \
           -t registry.digitalocean.com/rgraner-k8s/django-k8s-web:latest \
-          -t registry.digitalocean.com/rgraner-k8s/django-k8s-web:${GITHUB_SHA::7} \
+          -t registry.digitalocean.com/rgraner-k8s/django-k8s-web:${GITHUB_SHA::7}-${GITHUB_RUN_ID::5} \
           .
     - name: Push image
       run: |
@@ -57,7 +57,7 @@ jobs:
         kubectl delete secret django-k8s-web-prod-env
         kubectl create secret generic django-k8s-web-prod-env --from-env-file=web/.env.prod
     - name: Update deployment image
-      run: kubectl set image deployment/django-k8s-web-deployment django-k8s-web=registry.digitalocean.com/rgraner-k8s/django-k8s-web:${GITHUB_SHA::7}
+      run: kubectl set image deployment/django-k8s-web-deployment django-k8s-web=registry.digitalocean.com/rgraner-k8s/django-k8s-web:${GITHUB_SHA::7}-${GITHUB_RUN_ID::5}
     - name: wait for rollout to finish
       run: |
         kubectl rollout status deployment/django-k8s-web-deployment
